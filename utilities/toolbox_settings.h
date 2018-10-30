@@ -22,7 +22,9 @@
  * library as well
  * 
  */
-#define FCY 4000000
+#ifndef FCY
+#define FCY 16000000
+#endif
 
 #include "xc.h"
 #include "libpic30.h"
@@ -31,6 +33,10 @@
 #define delay_ms(d) __delay32( (unsigned long) ((((unsigned long long) d)*(FCY)/1000ULL)-2))
 #define delay_us(d) __delay32( (unsigned long) ((((unsigned long long) d)*(FCY)/1000000ULL)-2))
 
+#define __PIN_ACCESS(x,y) x##y
+#define __PORTx(x) __PIN_ACCESS(_R, x)
+#define __LATx(x) __PIN_ACCESS(_LAT, x)
+#define __TRISx(x) __PIN_ACCESS(_TRIS, x)
 
 /* Generic LCD library config
  *
@@ -38,27 +44,50 @@
  * pins connected to DB[4:7], E, and RS will allow use of
  * this library in 4-bit mode
  * 
- * TODO: add 8-bit mode compatibility
+ * TODO: add 8-bit mode compatibility and lcd ram reading
  * 
  * constants to be used in code are found in lcd_generic.h
  * 
  */
 
-#ifdef LCD_SETTINGS
+#ifdef __LIBLCD_SETTINGS
 
-#define TRIS_DB4 _TRISB0
-#define TRIS_DB5 _TRISB1
-#define TRIS_DB6 _TRISB2
-#define TRIS_DB7 _TRISB3
-#define TRIS_RS  _TRISB4
-#define TRIS_E   _TRISB5
+// uncomment this line to remove all lcd functions
+// #define __LIBLCD_DISABLED
 
-#define LAT_DB4  _LATB0
-#define LAT_DB5  _LATB1
-#define LAT_DB6  _LATB2
-#define LAT_DB7  _LATB3
-#define LAT_RS   _LATB4
-#define LAT_E    _LATB5
+#define _DB4 B0
+#define _DB5 B1
+#define _DB6 B2
+#define _DB7 B3
+#define _RS  B4
+#define _E   B5
+
+#endif
+
+#ifdef __LIBKEYPAD_4x3_SETTINGS
+
+// uncomment this line to remove all keypad functions
+// #define __LIBKEYPAD_4x3_DISABLE
+
+// uncomment this line to enable automatic keypad interrupt detection
+// #define __LIBKEYPAD_4x3_CNISR
+
+#define __CN_ACCESS(x,y) _CN##y##x
+#define __CN_PUE(x) __CN_ACCESS(PUE, x)
+#define __CN_IE(x) __CN_ACCESS(IE, x)
+
+#define _COL1 B7
+#define _COL2 B8
+#define _COL3 B9
+#define _ROW1 A1
+#define _ROW2 A2
+#define _ROW3 A3
+#define _ROW4 A4
+
+#define _CN_ROW1 3
+#define _CN_ROW2 30
+#define _CN_ROW3 29
+#define _CN_ROW4 0
 
 #endif
 

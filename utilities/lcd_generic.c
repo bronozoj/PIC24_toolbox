@@ -1,7 +1,9 @@
-#define LCD_SETTINGS
+#define __LIBLCD_SETTINGS
 
 #include "toolbox_settings.h"
 #include "lcd_generic.h"
+
+#ifndef __LIBLCD_DISABLED
 
 /* send_4bits()
  * 
@@ -12,13 +14,13 @@
  */
 
 void send_4bits(uint8_t rs, uint8_t data){
-    LAT_RS = rs;
-    LAT_E = 1;
-    LAT_DB7 = (data & 8) ? 1 : 0;
-    LAT_DB6 = (data & 4) ? 1 : 0;
-    LAT_DB5 = (data & 2) ? 1 : 0;
-    LAT_DB4 = data & 1;
-    LAT_E = 0;
+    __LATx(_RS)  = rs;
+    __LATx(_E)   = 1;
+    __LATx(_DB7) = (data & 8) ? 1 : 0;
+    __LATx(_DB6) = (data & 4) ? 1 : 0;
+    __LATx(_DB5) = (data & 2) ? 1 : 0;
+    __LATx(_DB4) = data & 1;
+    __LATx(_E)   = 0;
 }
 
 /* send_8bits()
@@ -32,20 +34,20 @@ void send_4bits(uint8_t rs, uint8_t data){
  */
 
 void send_8bits(uint8_t rs, uint8_t data){
-    LAT_RS = rs;
-    LAT_E = 1;
-    LAT_DB7 = (data & 0x80) ? 1 : 0;
-    LAT_DB6 = (data & 0x40) ? 1 : 0;
-    LAT_DB5 = (data & 0x20) ? 1 : 0;
-    LAT_DB4 = (data & 0x10) ? 1 : 0;
-    LAT_E = 0;
+    __LATx(_RS)  = rs;
+    __LATx(_E)   = 1;
+    __LATx(_DB7) = (data & 0x80) ? 1 : 0;
+    __LATx(_DB6) = (data & 0x40) ? 1 : 0;
+    __LATx(_DB5) = (data & 0x20) ? 1 : 0;
+    __LATx(_DB4) = (data & 0x10) ? 1 : 0;
+    __LATx(_E)   = 0;
     delay_us(100);
-    LAT_E = 1;
-    LAT_DB7 = (data & 0x8) ? 1 : 0;
-    LAT_DB6 = (data & 0x4) ? 1 : 0;
-    LAT_DB5 = (data & 0x2) ? 1 : 0;
-    LAT_DB4 = (data & 0x1) ? 1 : 0;
-    LAT_E = 0;
+    __LATx(_E)   = 1;
+    __LATx(_DB7) = (data & 0x8) ? 1 : 0;
+    __LATx(_DB6) = (data & 0x4) ? 1 : 0;
+    __LATx(_DB5) = (data & 0x2) ? 1 : 0;
+    __LATx(_DB4) = (data & 0x1) ? 1 : 0;
+    __LATx(_E)   = 0;
 }
 
 /* lcd_clear()
@@ -256,12 +258,12 @@ int lcd_num_offset(uint16_t number, uint8_t pos, uint8_t offset){
 
 void lcd_begin(){
     // initialize pins as outputs
-    TRIS_DB4 = 0;
-    TRIS_DB5 = 0;
-    TRIS_DB6 = 0;
-    TRIS_DB7 = 0;
-    TRIS_RS  = 0;
-    TRIS_E   = 0;
+    __TRISx(_DB4) = 0;
+    __TRISx(_DB5) = 0;
+    __TRISx(_DB6) = 0;
+    __TRISx(_DB7) = 0;
+    __TRISx(_RS)  = 0;
+    __TRISx(_E)   = 0;
 
     // 4-bit mode initialization
     // TODO: add 8-bit mode operation for completeness
@@ -285,3 +287,5 @@ void lcd_begin(){
     send_8bits(0, 0xf);
     delay_us(4100);
 }
+
+#endif
