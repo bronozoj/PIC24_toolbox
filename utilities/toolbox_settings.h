@@ -1,54 +1,181 @@
-/*
- * File: toolbox_settings.h
- * Author: bronozoj
+/**************************************************************************/
+/** @file  toolbox_settings.h
+ *  @brief This file contains macros to be configured by users.
+ *  @author Jaime Bronozo
  * 
- * Modify pin values accordingly for the library to interface
- * properly with the hardware
- *
+ *  This is a header file used by all libraries as a configuration hub to
+ *  allow library modification to be compressed into a single file.  
+ *  Library specific settings can be found here such as pinouts and
+ *  function availability.  
+ *  Libraries can be included or excluded by
+ *  commenting/uncommenting their respective disable macro.
+ * 
+ *  @date November 1, 2018
  */
+/**************************************************************************/
 
 #ifndef __TOOLBOX_SETTINGS_COMMON_H__
 #define __TOOLBOX_SETTINGS_COMMON_H__
 
-/*
- * Instruction cycle speed
+/**************************************************************************/
+/** @def FCY
  * 
- * Defining the instruction cycle frequency (FCY) allow
- * you to use calibrated delay functions in units of
- * seconds instead of instruction cycles
+ *  @brief Defines the instruction cycle frequency
+ *  
+ *  This macro is used for various functions across the library as a
+ *  standard unit of measurement for the number of instruction cycles per
+ *  second. This allows the usage of functions inside the library
+ *  **libpic30.h** as well as various other library functions such as the
+ *  delay functions.
  * 
- * This also automatically includes libpic30.h functions
- * with it which allow you to use functions from that
- * library as well
- * 
+ *  Set this value in unit of Hertz (Fosc/2 for PIC24F devices).
  */
+/**************************************************************************/
 #ifndef FCY
 #define FCY 16000000
 #endif
 
+/// @cond
 #include "xc.h"
 #include "libpic30.h"
+/// @endcond
 
+/**************************************************************************/
+/** @def delay_s(d)
+ *  @param d Time in unit seconds.
+ * 
+ *  @brief Stalls execution of instructions in seconds.
+ * 
+ *  Functions as a definite time delay function wrapped around the
+ *  **__delay32()** function. This converts the number seconds to stall to
+ *  its equivalent cycle count.
+ * 
+ *  @note This function is dependent on the proper setting of Fcy
+ * 
+ *  @def delay_ms(d)
+ *  @param d Time in unit milliseconds.
+ * 
+ *  @brief Stalls execution of instructions in milliseconds.
+ * 
+ *  Functions as a definite time delay function wrapped around the
+ *  **__delay32()** function. This converts the number milliseconds to stall
+ *  to its equivalent cycle count.
+ * 
+ *  @note This function is dependent on the proper setting of Fcy.
+ * 
+ *  @def delay_us(d)
+ *  @param d Time in unit microseconds.
+ * 
+ *  @brief Stalls execution of instructions in microseconds/
+ * 
+ *  Functions as a definite time delay function wrapped around the 
+ *  **__delay32()** function. This converts the number microseconds to stall
+ *  to its equivalent cycle count.
+ * 
+ *  @note This function is dependent on the proper setting of Fcy.
+ */
+/**************************************************************************/
 #define delay_s(d)  __delay32( (unsigned long) ((((unsigned long long) d)*(FCY))-2))
 #define delay_ms(d) __delay32( (unsigned long) ((((unsigned long long) d)*(FCY)/1000ULL)-2))
 #define delay_us(d) __delay32( (unsigned long) ((((unsigned long long) d)*(FCY)/1000000ULL)-2))
 
+
+/**************************************************************************/
+/** @def __PIN_ACCESS(x, y)
+ *  @param x Term to be concatenated on by *y*.
+ *  @param y Term to be concatenated to *x*.
+ * 
+ *  @brief Macro for concatenating pin value to function register.
+ * 
+ *  This function is a macro used to expand pin value settings to their
+ *  respective prefix to access the respective special function registers
+ *  associated with it.
+ * 
+ *  @note This is internally used by other macros and must not be used for
+ *  other purposes.
+ * 
+ *  @def __PORTx(x)
+ *  @param x Pin assigment macro to be used for digital reading.
+ * 
+ *  @brief Allows reading from a labeled pin macro.
+ * 
+ *  This macro appends the term *_PORT* to the pin value associated with
+ *  the macro to form the _PORTx# term that refers to the specific pin
+ *  for reading.
+ * 
+ *  @def __LATx(x)
+ *  @param x Pin assignemnt macro to be used for digital writing.
+ * 
+ *  @brief Allows writing from a labeled pin macro.
+ * 
+ *  This macro appends the term *_LAT* to the pin value associated with
+ *  the macro to form the _LATx# term that refers to the specific pin
+ *  for writing.
+ * 
+ *  @def __TRISx(x)
+ *  @param x Pin assignemnt macro to be used for pin direction
+ * 
+ *  @brief Allows pin direction assignemtn from a labelled pin macro.
+ * 
+ *  This macro appends the term *_TRIS* to the pin value associated with
+ *  the macro to form the _TRISx# term that refers to the specific pin
+ *  for I/O direction assignment.
+ */
+/**************************************************************************/
 #define __PIN_ACCESS(x,y) x##y
 #define __PORTx(x) __PIN_ACCESS(_R, x)
 #define __LATx(x) __PIN_ACCESS(_LAT, x)
 #define __TRISx(x) __PIN_ACCESS(_TRIS, x)
 
-/* Generic LCD library config
- *
- * Defining the pin select (TRIS) and write (LAT) for the 
- * pins connected to DB[4:7], E, and RS will allow use of
- * this library in 4-bit mode
+/**************************************************************************/
+/** @page lcdlib Configuring the Generic LCD Library
+ *  @tableofcontents
  * 
- * TODO: add 8-bit mode compatibility and lcd ram reading
+ *  This page describes the available settings to modify in the code
+ *  section of the LCD library found in toolbox_settings.h.
  * 
- * constants to be used in code are found in lcd_generic.h
+ *  @section lcdpin Pin Configurations
  * 
+ *  For proper 4-bit mode operation, the respective macros _DB4, _DB5,
+ *  _DB6, and _DB7 must be set with the correct pin labels as well as the
+ *  _RS and _E pins to allow register select and data entering. Proper
+ *  configuration of this macros will make the library work after a call
+ *  to lcd_begin().
+ * 
+ *  ```C
+ *  #define _DB4 B0
+ *  #define _DB5 B1
+ *  ...
+ *  #define _RS  B4
+ *  #define _E   B5
+ *  ```
+ * 
+ *  To not conflict with other macros that the user may define, all the
+ *  lcd setting macros have been enclosed inside a conditional definition
+ *  that only the lcd implementation files have access to.
+ * 
+ *  @section lcdoff Disabling the LCD library
+ * 
+ *  To exclude the library when not in use with the current project, define
+ *  the macro __LIBLCD_DISABLED to exclude lcd_generic.c from compilation
+ *  and exclude the header lcd_generic.h from the main header file.
+ * 
+ *  ```C
+ *  // uncomment this line to remove all lcd functions
+ *  // #define __LIBLCD_DISABLED
+ *  ```
+ * 
+ *  @section lcdlim Limitations
+ * 
+ *  The LCD library is a work in progress and may not be functionally
+ *  complete. For one, there are no functions for reading back the memory
+ *  of the LCD as well as defining custom characters. Most of the functions,
+ *  however, have been wrapped in easy to use functions that abstract
+ *  lcd operations. This is also dependent on the proper definition of the
+ *  macro Fcy for the delay functions used to wait for the lcd to be
+ *  available for receiving commands.
  */
+/**************************************************************************/
 
 #ifdef __LIBLCD_SETTINGS
 
@@ -63,6 +190,16 @@
 #define _E   B5
 
 #endif
+
+/**************************************************************************/
+/** @page keypadlib Configuring the 4x3 Number Pad
+ * 
+ *  This page describes the available settings to modify in the code
+ *  section of the 4x3 Number Pad found in toolbox_settings.h.
+ * 
+ *  To be documented
+ */
+/**************************************************************************/
 
 #ifdef __LIBKEYPAD_4x3_SETTINGS
 

@@ -1,17 +1,45 @@
+/**************************************************************************/
+/** @file   lcd_generic.c
+ *  @brief  This file contains function wrappers for lcd commands
+ *  @author Jaime Bronozo
+ * 
+ *  This is a library for a generic dot matrix character lcd module. This
+ *  library works in conjuction with the settings found in the
+ *  configuration file toolbox_settings.h in order to set the proper pin
+ *  connections to the module.
+ * 
+ *  @note This file is excluded from compilation when __LIBLCD_DISABLED
+ *  macro is defined.
+ * 
+ *  @date November 1, 2018 
+ */
+/**************************************************************************/
+
+/// @cond
 #define __LIBLCD_SETTINGS
 
 #include "toolbox_settings.h"
 #include "lcd_generic.h"
 
 #ifndef __LIBLCD_DISABLED
+/// @endcond
 
-/* send_4bits()
+/**************************************************************************/
+/** @param rs Sets the register select bit. Setting this to 1 will access
+ *  the character register while setting this to 0 will access the command
+ *  register.
+ *  @param data Sends the lower 4 bits to the lcd registers.
  * 
- * sends 4 bits of data to the lcd directly
- * this function does not handle reading the
- * busy flag before transmitting data
+ *  @return none
  * 
+ *  @brief Sends 4 bits of data to the lcd.
+ * 
+ *  This function is usually used during the lcd software initialization
+ *  and must not be used for other purposes once the lcd has been
+ *  initialized to avoid incorrectly registering the wrong values during
+ *  normal operation.
  */
+/**************************************************************************/
 
 void send_4bits(uint8_t rs, uint8_t data){
     __LATx(_RS)  = rs;
@@ -23,15 +51,26 @@ void send_4bits(uint8_t rs, uint8_t data){
     __LATx(_E)   = 0;
 }
 
-/* send_8bits()
- *
- * sends 8 bits of data to the lcd directly
- * this function does not handle reading the
- * busy flag before transmitting data
+/**************************************************************************/
+/** @param rs Sets the register select bit. Setting this to 1 will access
+ *  the character register while setting this to 0 will access the command
+ *  register.
+ *  @param data Sends the whole 8 bits to the lcd registers in a controlled
+ *  manner.
  * 
- * TODO: add 8-bit mode operation for completeness
+ *  @return none
  * 
+ *  @brief Sends 8 bits of data to the lcd.
+ * 
+ *  This function is usually used after the lcd has been initialized. This
+ *  function is also used by other lcd functions to send commands or
+ *  characters in a uniform manner. This is a wrapper function for sending
+ *  8 bits of data to the lcd for either 4-bit or 8-bit mode operation
+ * 
+ *  @note This function is currently limited for 4-bit mode lcd
+ *  initialization
  */
+/**************************************************************************/
 
 void send_8bits(uint8_t rs, uint8_t data){
     __LATx(_RS)  = rs;
@@ -50,87 +89,135 @@ void send_8bits(uint8_t rs, uint8_t data){
     __LATx(_E)   = 0;
 }
 
-/* lcd_clear()
+/**************************************************************************/
+/** @brief Clears the screen and resets the cursor and screen position.
  *
- * fills the lcd memory with 0x20 (space) to clear the
- * screen and resets the position of the cursor and screen.
- * this waits for a minimum of 15.2ms instead of checking
- * if the lcd is ready for a new command
+ *  Fills the lcd memory with 0x20 (space) to clear the screen and resets
+ *  the position of the cursor and screen. This sends the lcd command
+ *  0x01. 
+ * 
+ *  @return none
+ * 
+ *  @note This waits for a minimum of 15.2ms instead of checking if the
+ *  lcd is ready for a new command due to the lack of an implementation
+ *  for lcd read back.
  */
+/**************************************************************************/
 
 void lcd_clear(){
     send_8bits(0, 0x1);
     delay_us(15200);
 }
 
-/* lcd_home()
+/**************************************************************************/
+/** @brief Resets the cursor and screen position.
  *
- * resets the position of the cursor and screen to the
- * zero position. Sends lcd command b'(1x) and waits
- * for a minimum of 15.2ms instead of checking if the
- * lcd is ready for a new command
+ *  Sets the position of the cursor to address zero and 
+ *  the screen shift back to zero. This sends the lcd command 0x02.
  * 
+ *  @return none
+ *  
+ *  @note This waits for a minimum of 15.2ms instead of checking if the
+ *  lcd is ready for a new command due to the lack of an implementation
+ *  for lcd read back.
  */
+/**************************************************************************/
 
 void lcd_home(){
     send_8bits(0, 0x2);
     delay_us(15200);
 }
 
-/* lcd_display()
+/**************************************************************************/
+/** @param d Turns the display on or off. Use flags #DISPLAY_ON for on and
+ *  #DISPLAY_OFF for off.
+ *  @param c Turns the cursor at the bottom of the current character on or
+ *  off. Use flags #CURSOR_ON for on and #CURSOR_OFF for off.
+ *  @param b Turns the character blinking on the current character on or
+ *  off. Use flags #BLINK_ON for on and #BLINK_OFF for off.
  *
- * sets display, cursor, and blink state and waits
- * for 40us instead of checking if the lcd is ready
- * for a new command. use the appropriate macros 
- * to set the values.
+ *  @brief Sets the lcd display parameters
  * 
- * DISPLAY_ON/OFF - turns the display on/off
- * CURSOR_ON/OFF - turns the cursor under the characters
- *      on or off
- * BLINK_ON/OFF - turns the character blink on/off
+ *  Sets the parameters for the display, cursor, and blink mode of the lcd.
+ *  This ends the lcd command 0x8 and the respective parameters.
  * 
+ *  @return none
+ * 
+ *  @note This waits for a minimum of 40us instead of checking if the 
+ *  lcd is ready for a new command due to the lack of an implementation
+ *  for lcd read back.
  */
+/**************************************************************************/
 
 void lcd_display(uint8_t d, uint8_t c, uint8_t b){
-    send_8bits(0, 0x8 | d | c | b);
+    send_8bits(0, 0x8 | (d ? 0x4 : 0) | c | b);
     delay_us(40);
 }
 
-/* lcd_shift()
+/**************************************************************************/
+/** @param direction Sets the screen shift direction to the left or right.
+ *  Use flags #SHIFT_RIGHT to shift right and #SHIFT_LEFT to shift left.
  *
- * shifts the display one unit to the left or right
+ *  @brief Shifts the display one character to the left or right
  * 
- * SHIFT_LEFT/RIGHT - shifts the display left/right
+ *  Moves the display address to the left or right. This sends the lcd
+ *  command 0x18 and the respective parameters.
  * 
+ *  @return none
+ * 
+ *  @note This waits for a minimum of 40us instead of checking if the 
+ *  lcd is ready for a new command due to the lack of an implementation
+ *  for lcd read back.
  */
+/**************************************************************************/
 
 void lcd_shift(uint8_t direction){
-    send_8bits(0, 0x18 | direction);
+    send_8bits(0, 0x18 | (direction ? 0x4 : 0));
     delay_us(40);
 }
 
-/* lcd_cursor()
+/**************************************************************************/
+/** @param pos Sets the line at which the cursor will start. Use flags
+ *  #CURSOR_BOTTOM to place the cursor at the bottom line or #CURSOR_TOP
+ *  to place the cursor at the top line.
+ *  @param offset Sets the offset of the cursor position from the start of
+ *  the line.
  *
- * moves the cursor to the specified position in the display
+ *  @brief Moves the cursor to a different position.
  * 
- * CURSOR_TOP/BOTTOM - positions the cursor to the
- *      top/bottom part of the lcd
+ *  Moves the cursor address to an absolute position. This sends the lcd
+ *  command 0x80 and the respective parameters.
  * 
+ *  @return none
+ * 
+ *  @note This waits for a minimum of 40us instead of checking if the
+ *  lcd is ready for a new command due to the lack of an implementation
+ *  for lcd read back.
  */
+/**************************************************************************/
 
 void lcd_cursor(uint8_t pos, uint8_t offset){
     send_8bits(0, 0x80 | pos | offset);
     delay_us(40);
 }
 
-/* lcd_text()
+/**************************************************************************/
+/** @param str String to display in the lcd
+ * 
+ *  @brief Displays a string to the lcd.
  *
- * display a string to the lcd starting at the current
- * cursor position
+ *  Display an input string to the lcd starting at the current cursor
+ *  position. This assumes that the cursor position is known before usage.
+ *  This sends characters to the character register and assumes that the
+ *  the lcd is receiving data to the DD RAM.
  * 
- * returns the number of characters displayed
+ *  @return The number of characters written to the lcd.
  * 
+ *  @note This waits for a minimum of 40us per character instead of
+ *  checking if the lcd is ready for a new command due to the lack of an
+ *  implementation for lcd read back.
  */
+/**************************************************************************/
 
 int lcd_text(char *str){
     int j = 0;
@@ -142,19 +229,37 @@ int lcd_text(char *str){
     return j;
 }
 
-/* lcd_text_offset()
- *
- * moves the cursor to the specified position like
- * lcd_cursor() and displays a string starting from it
+/**************************************************************************/
+/** @param str String to display in the lcd
+ *  @param pos Sets the line at which the cursor will start. Use flags
+ *  #CURSOR_BOTTOM to place the cursor at the bottom line or #CURSOR_TOP
+ *  to place the cursor at the top line.
+ *  @param offset Sets the offset of the cursor position from the start of
+ *  the line.
  * 
- * returns the number of characters displayed
+ *  @brief Displays a string to the lcd in a specific position.
  *
+ *  Combines the functions lcd_cursor() and lcd_text() to position the
+ *  cursor before displaying an input string to the lcd. This sends
+ *  characters to the character register and  assumes that the lcd is
+ *  receiving data to the DD RAM.
+ * 
+ *  @return The number of characters written to the lcd.
+ * 
+ *  @note This waits for a minimum of 40us per character and cursor
+ *  position setting instead of checking if the lcd is ready for a new
+ *  command due to the lack of an implementation for lcd read back.
  */
+/**************************************************************************/
 
 int lcd_text_offset(char *str, uint8_t pos, uint8_t offset){
     int j = 0;
+
+    // reposition cursor
     send_8bits(0, 0x80 | pos | offset);
     delay_us(40);
+
+    // send each character
     while(str[j] != '\0'){
         send_8bits(1, (str[j]));
         delay_us(40);
@@ -163,14 +268,24 @@ int lcd_text_offset(char *str, uint8_t pos, uint8_t offset){
     return j;
 }
 
-/* lcd_num()
+/**************************************************************************/
+/** @param number An unsigned digit.
  *
- * displays an unsigned 16-bit digit to the lcd starting
- * at the current cursor position
+ *  @brief Displays an unsigned digit to the lcd.
  * 
- * returns the number of characters displayed
+ *  Displays an input unsigned integer value to the lcd starting at the
+ *  current cursor position. This assumes that the cursor position is
+ *  known before usage. This sends the equivalent digit characters to the
+ *  character register and assumes that the lcd is receiving data to the
+ *  DDRAM register.
  * 
+ *  @return The number of characters written to the lcd.
+ * 
+ *  @note This waits for a minimum of 40us per digit instead of checking
+ *  if the lcd is ready for a new command due to the lack of an
+ *  implementation for lcd read back.
  */
+/**************************************************************************/
 
 int lcd_num(uint16_t number){
     int length = 1;
@@ -203,57 +318,78 @@ int lcd_num(uint16_t number){
     return length;
 }
 
-/* lcd_num_offset
+/**************************************************************************/
+/** @param number An unsigned digit.
+ *  @param pos Sets the line at which the cursor will start. Use flags
+ *  #CURSOR_BOTTOM to place the cursor at the bottom line or #CURSOR_TOP
+ *  to place the cursor at the top line.
+ *  @param offset Sets the offset of the cursor position from the start of
+ *  the line.
  *
- * moves the cursor to the specified position like
- * lcd_cursor() and displays a 16-bit digit starting
- * from it
+ *  @brief Displays an unsigned digit to the lcd in a specific position.
  * 
- * returns the number of characters displayed
+ *  Combines the functions lcd_cursor() and lcd_num() to position the
+ *  cursor before displaying an input unsigned digit to the lcd. This
+ *  sends the equivalent digit characters to the character register and
+ *  assumes that the lcd is receiving data to the DD RAM.
  * 
+ *  @return The number of characters written to the lcd.
+ * 
+ *  @note This waits for a minimum of 40us per digit character and cursor
+ *  position setting instead of checking if the lcd is ready for a new
+ *  command due to the lack of an implementation for lcd read back.
  */
+/**************************************************************************/
 
 int lcd_num_offset(uint16_t number, uint8_t pos, uint8_t offset){
-    int j = 1;
+    int length = 1;
+
+    // reposition cursor
     send_8bits(0, 0x80 | pos | offset);
     delay_us(40);
+
+    // display every digit
     if(number >= 10000){
         send_8bits(1, ((number / 10000) % 10) + '0');
         delay_us(40);
-        j++;
+        length++;
     }
     
     if(number >= 1000){
         send_8bits(1, ((number / 1000) % 10) + '0');
         delay_us(40);
-        j++;
+        length++;
     }
 
     if(number >= 100){
         send_8bits(1, ((number / 100) % 10) + '0');
         delay_us(40);
-        j++;
+        length++;
     }
     
     if(number >= 10){
         send_8bits(1, ((number / 10) % 10) + '0');
         delay_us(40);
-        j++;
+        length++;
     }
     
     send_8bits(1, (number % 10) + '0');
     delay_us(40);
-    return j;
+    return length;
 }
 
-/* lcd_begin()
+/**************************************************************************/
+/** @brief Initializes the lcd for use.
  *
- * initializes the lcd through a software reset. This
- * removes the need for controlling the lcd power supply
- * to initialize.
+ *  Initializes the lcd through a software reset. This removes the need for
+ *  controlling the lcd power supply to initialize. The bit mode on which
+ *  the lcd is sending data from is by default in 4-bit mode
  * 
- * TODO: add 8-bit mode operation for completeness
+ *  @return none
  * 
+ *  @note There is no support yet for 8-bit mode operation as 4-bit mode
+ *  uses less pins and has negligible speed impact compared to full 8-bit
+ *  mode. 
  */
 
 void lcd_begin(){
