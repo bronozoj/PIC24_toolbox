@@ -49,7 +49,7 @@
 #include "utilities/lcd_generic.h"
 #endif
 
-#ifndef __LIBKEYPAD_4x3_DISABLE
+#if __LIBKEYPAD_4x3_DISABLE == 1
 #include "utilities/keypad_4x3.h"
 #endif
 

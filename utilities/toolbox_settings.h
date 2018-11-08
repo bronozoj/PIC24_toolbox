@@ -203,11 +203,32 @@
 
 #ifdef __LIBKEYPAD_4x3_SETTINGS
 
-// uncomment this line to remove all keypad functions
-// #define __LIBKEYPAD_4x3_DISABLE
+/**************************************************************************/
+/** @def __LIBKEYPAD_4x3_DISABLE
+ * 
+ *  @brief Set to 1 to disable the keypad library
+ * 
+ *  Enables or disables the keypad library.  Disabling using this option
+ *  will automatically exclude compilation of keypad_4x3.c and remove
+ *  keypad_4x3.h from inclusion in the main header PIC24_toolbox.h
+ */
+/**************************************************************************/
+#define __LIBKEYPAD_4x3_DISABLE 0
 
-// uncomment this line to enable automatic keypad interrupt detection
-// #define __LIBKEYPAD_4x3_CNISR
+/**************************************************************************/
+/** @def __LIBKEYPAD_4x3_CNISR
+ * 
+ *  @brief Set to 1 to auto-manage the change notification interrupt
+ * 
+ *  Enables or disables the automatic management of the change
+ *  notification interrupt. If not used, the library can be configured
+ *  to use the change notification interrupt by itself. If, however,
+ *  other functions must integrate with it, the interrupt priority and
+ *  enable must be manually set and the function keypad_update() be
+ *  called inside the _CNInterrupt() function at least once.
+ */
+/**************************************************************************/
+#define __LIBKEYPAD_4x3_CNISR 0
 
 #define __CN_ACCESS(x,y) _CN##y##x
 #define __CN_PUE(x) __CN_ACCESS(PUE, x)
