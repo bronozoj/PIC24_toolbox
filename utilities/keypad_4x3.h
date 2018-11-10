@@ -18,6 +18,7 @@ void keypad_begin();
 short int keypad_number();
 short int keypad_row();
 short int keypad_col();
+void keypad_reset();
 
 #if __LIBKEYPAD_4x3_CNISR == 1
 void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(void);

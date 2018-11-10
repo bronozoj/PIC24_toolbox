@@ -14,8 +14,10 @@
  */
 /**************************************************************************/
 
+/// @cond
 #ifndef __TOOLBOX_SETTINGS_COMMON_H__
 #define __TOOLBOX_SETTINGS_COMMON_H__
+/// @endcond
 
 /**************************************************************************/
 /** @def FCY
@@ -156,13 +158,13 @@
  * 
  *  @section lcdoff Disabling the LCD library
  * 
- *  To exclude the library when not in use with the current project, define
- *  the macro __LIBLCD_DISABLED to exclude lcd_generic.c from compilation
- *  and exclude the header lcd_generic.h from the main header file.
+ *  To exclude the library when not in use with the current project, set
+ *  the macro __LIBLCD_DISABLED to 1 to exclude the library from
+ *  compilation when not needed for your application
  * 
  *  ```C
- *  // uncomment this line to remove all lcd functions
- *  // #define __LIBLCD_DISABLED
+ *  // #define __LIBLCD_DISABLED 0
+ *  #define __LIBLCD_DISABLED 1
  *  ```
  * 
  *  @section lcdlim Limitations
@@ -179,8 +181,17 @@
 
 #ifdef __LIBLCD_SETTINGS
 
-// uncomment this line to remove all lcd functions
-// #define __LIBLCD_DISABLED
+/**************************************************************************/
+/** @def __LIBLCD_DISABLED
+ * 
+ *  @brief Set to 1 to disable the lcd library
+ * 
+ *  Enables or disables the lcd library. Disabling using this option will
+ *  automatically exclude compilation of lcd_generic.c and remove
+ *  lcd_generic.h from inclusion in the main header PIC24_toolbox.h
+ */
+/**************************************************************************/
+#define __LIBLCD_DISABLED 0
 
 #define _DB4 B0
 #define _DB5 B1
@@ -193,11 +204,53 @@
 
 /**************************************************************************/
 /** @page keypadlib Configuring the 4x3 Number Pad
+ *  @tableofcontents
  * 
  *  This page describes the available settings to modify in the code
  *  section of the 4x3 Number Pad found in toolbox_settings.h.
+ *  
+ *  @section keypadpin Pin Configurations
  * 
- *  To be documented
+ *  For proper library mapping, the respective macros _COL1, _COL2, _COL3,
+ *  and _COL4 must be set to the proper pins connected to the column of
+ *  the matrix while the macros _ROW1, _ROW2, _ROW3, and _ROW4 must be
+ *  set to the proper pins connected to the rows of the matrix
+ * 
+ *  ```C
+ *  #define _COL1 B7
+ *  #define _COL2 B8
+ *  ...
+ *  #define _ROW3  B3
+ *  #define _ROW4  B4
+ *  ```
+ * 
+ *  The respective macros _CN_ROW1, _CN_ROW2, _CN_ROW3, and _CN_ROW4 must
+ *  be set to the proper change notification pin number corresponding
+ *  to the pin. This will ensure that the keypad will be instantaneously
+ *  updated whenever a button is pressed or released.
+ * 
+ *  ```C
+ *  #define _CN_ROW1 3
+ *  #define _CN_ROW2 30
+ *  #define _CN_ROW3 29
+ *  #define _CN_ROW4 0
+ *  ```
+ * 
+ *  @section keypadoff Disabling the Keypad library
+ * 
+ *  To exclude the library when not in use with the current project, set
+ *  the macro __LIBKEYPAD_4x3_DISABLED to 1 to exclude the library from
+ *  compilation when not needed for your application
+ * 
+ *  ```C
+ *  // #define __LIBKEYPAD_4x3_DISABLED 0
+ *  #define __LIBKEYPAD_4x3_DISABLED 1
+ *  ```
+ * 
+ *  @section keypadlim Limitations
+ * 
+ *  This library has not been tested rigorously for errors. Bugs can be
+ *  reported on [Github](https://github.com/bronozoj/PIC24_toolbox).
  */
 /**************************************************************************/
 
@@ -208,7 +261,7 @@
  * 
  *  @brief Set to 1 to disable the keypad library
  * 
- *  Enables or disables the keypad library.  Disabling using this option
+ *  Enables or disables the keypad library. Disabling using this option
  *  will automatically exclude compilation of keypad_4x3.c and remove
  *  keypad_4x3.h from inclusion in the main header PIC24_toolbox.h
  */

@@ -21,7 +21,7 @@
 #include "toolbox_settings.h"
 #include "lcd_generic.h"
 
-#ifndef __LIBLCD_DISABLED
+#if __LIBLCD_DISABLED != 1
 /// @endcond
 
 /**************************************************************************/

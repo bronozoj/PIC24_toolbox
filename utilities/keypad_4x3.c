@@ -22,7 +22,7 @@
 #include "toolbox_settings.h"
 #include "keypad_4x3.h"
 
-#if __LIBKEYPAD_4x3_DISABLE == 1
+#if __LIBKEYPAD_4x3_DISABLE != 1
 /// @endcond
 
 #define KEY_ROW ((keypad_value >> 2) & 3)
@@ -161,8 +161,6 @@ void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(){
 #else
 void keypad_update(){
 #endif
-    _CNIF = 0;
-    keypad_value &= 0xf0;
     if(!__PORTx(_ROW1))
         keypad_value |= 0x0;
     else if(!__PORTx(_ROW2))
@@ -171,7 +169,12 @@ void keypad_update(){
         keypad_value |= 0x8;
     else if(!__PORTx(_ROW4))
         keypad_value |= 0xc;
-    else
+    else{
+        keypad_value &= 0xe0;
+        return;
+    }
+
+    if(keypad_value & 0x10)
         return;
     
     __LATx(_COL2) = 1;
@@ -201,6 +204,20 @@ void keypad_update(){
 #if __LIBKEYPAD_4x3_CNISR == 1
     _CNIF = 0;
 #endif
+}
+
+
+/**************************************************************************/
+/** @brief Invalidates any current value until the next button press.
+ * 
+ *  Useful for detecting between keypresses. It makes the library wait for
+ *  the button to be unpressed before registering a pressed value again.
+ *
+ *  @note This does nothing when there is no button currently pressed.
+ */
+/**************************************************************************/
+void keypad_reset(){
+    keypad_value |= ((keypad_value & 0xf) == 0) ? 0 : 0x10;
 }
 
 #endif
