@@ -126,6 +126,17 @@
 #define __TRISx(x) __PIN_ACCESS(_TRIS, x)
 
 /** 
+ * @def __LIBLCD_DISABLED
+ * 
+ * @brief Set to 1 to disable the lcd library
+ * 
+ * Enables or disables the lcd library. Disabling using this option will
+ * automatically exclude compilation of lcd_generic.c and remove
+ * lcd_generic.h from inclusion in the main header PIC24_toolbox.h
+ **************************************************************************/
+#define __LIBLCD_DISABLED 0
+
+/** 
  * @page lcdlib Configuring the Generic LCD Library
  * @tableofcontents
  * 
@@ -176,16 +187,7 @@
 
 #ifdef __LIBLCD_SETTINGS
 
-/** 
- * @def __LIBLCD_DISABLED
- * 
- * @brief Set to 1 to disable the lcd library
- * 
- * Enables or disables the lcd library. Disabling using this option will
- * automatically exclude compilation of lcd_generic.c and remove
- * lcd_generic.h from inclusion in the main header PIC24_toolbox.h
- **************************************************************************/
-#define __LIBLCD_DISABLED 0
+#define __LIBLCD_READ_EN  0
 
 #define _DB4 B0
 #define _DB5 B1
@@ -193,8 +195,20 @@
 #define _DB7 B3
 #define _RS  B4
 #define _E   B5
+#define _RW  B7
 
 #endif
+
+/** 
+ * @def __LIBKEYPAD_4x3_DISABLE
+ * 
+ * @brief Set to 1 to disable the keypad library
+ * 
+ * Enables or disables the keypad library. Disabling using this option
+ * will automatically exclude compilation of keypad_4x3.c and remove
+ * keypad_4x3.h from inclusion in the main header PIC24_toolbox.h
+ **************************************************************************/
+#define __LIBKEYPAD_4x3_DISABLE 0
 
 /** 
  * @page keypadlib Configuring the 4x3 Number Pad
@@ -250,17 +264,6 @@
 
 #ifdef __LIBKEYPAD_4x3_SETTINGS
 
-/** 
- * @def __LIBKEYPAD_4x3_DISABLE
- * 
- * @brief Set to 1 to disable the keypad library
- * 
- * Enables or disables the keypad library. Disabling using this option
- * will automatically exclude compilation of keypad_4x3.c and remove
- * keypad_4x3.h from inclusion in the main header PIC24_toolbox.h
- **************************************************************************/
-#define __LIBKEYPAD_4x3_DISABLE 0
-
 /**
  * @def __LIBKEYPAD_4x3_CNISR
  * 
@@ -293,5 +296,14 @@
 #define _CN_ROW4 0
 
 #endif
+
+#endif
+
+#define __LIBADCREAD_DISABLE 0
+
+#ifdef __LIBADCREAD_SETTINGS
+
+#define _SAMPLE_PERIOD 2
+#define _ADC_PERIOD 1
 
 #endif

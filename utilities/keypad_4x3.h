@@ -4,8 +4,8 @@
  * @author Jaime Bronozo
  * 
  * This is a header file for keypad_4x3.c which must be included to any
- * source files that require usage of lcd related functions. This library
- * is dynamically included in the main header PIC24_toolbox.h
+ * source files that require usage of keypad related functions. This
+ * library is dynamically included in the main header PIC24_toolbox.h
  * 
  * @date November 8, 2018
  **************************************************************************/

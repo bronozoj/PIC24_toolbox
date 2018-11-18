@@ -120,7 +120,7 @@ short int keypad_row(){
 }
 
 
-/***********************************************************************//**
+/**
  * @brief Gives the keypad column value
  *
  * Returns the column of the keypad button being pressed. The column index
@@ -134,7 +134,7 @@ short int keypad_col(){
     return KEY_COL - 1;
 }
 
-/***********************************************************************//**
+/**
  * @fn void keypad_update()
  * @brief Updates the keypad value seen by the library.
  *
@@ -200,7 +200,7 @@ void keypad_update(){
 }
 
 
-/***********************************************************************//**
+/**
  * @brief Invalidates any current value until the next button press.
  * 
  * Useful for detecting between keypresses. It makes the library wait for
