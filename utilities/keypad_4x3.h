@@ -1,15 +1,14 @@
-/**************************************************************************/
-/** @file  keypad_4x3.h
- *  @brief This file contains function wrappers for keypad access
- *  @author Jaime Bronozo
+/** 
+ * @file  keypad_4x3.h
+ * @brief This file contains function wrappers for keypad access
+ * @author Jaime Bronozo
  * 
- *  This is a header file for keypad_4x3.c which must be included to any
- *  source files that require usage of lcd related functions. This
- *  library is dynamically included in the main header PIC24_toolbox.h
+ * This is a header file for keypad_4x3.c which must be included to any
+ * source files that require usage of lcd related functions. This library
+ * is dynamically included in the main header PIC24_toolbox.h
  * 
- *  @date November 8, 2018
- */
-/**************************************************************************/
+ * @date November 8, 2018
+ **************************************************************************/
 
 #ifndef __KEYPAD_4x3_TOOLBOX_H__
 #define __KEYPAD_4x3_TOOLBOX_H__

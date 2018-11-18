@@ -1,20 +1,19 @@
-/**************************************************************************/
-/** @file keypad_4x3.c
- *  @brief This file contains function wrappers for keypad access
- *  @author Jaime Bronozo
+/**
+ * @file keypad_4x3.c
+ * @brief This file contains function wrappers for keypad access
+ * @author Jaime Bronozo
  * 
- *  This is a library for accessing a generic 4x3 matrix keypad to
- *  abstract the hardware addressing to read the effective keypad value.
- *  This library works in conjunction with the settings found in the
- *  configuration file toolbox_settings.h in order to set the proper pin
- *  connections to the module.
+ * This is a library for accessing a generic 4x3 matrix keypad to abstract
+ * the hardware addressing to read the effective keypad value. This library
+ * works in conjunction with the settings found in the configuration file
+ * toolbox_settings.h in order to set the proper pin connections to the
+ * module.
  * 
- *  @note This file is excluded from compilation when
- *  __LIBKEYPAD_4x3_DISABLE macro is defined.
+ * @note This file is excluded from compilation when
+ * __LIBKEYPAD_4x3_DISABLE macro is defined.
  * 
- *  @date November 11, 2018 
- */
-/**************************************************************************/
+ * @date November 11, 2018 
+ **************************************************************************/
 
 /// @cond
 #define __LIBKEYPAD_4x3_SETTINGS
@@ -28,33 +27,31 @@
 #define KEY_ROW ((keypad_value >> 2) & 3)
 #define KEY_COL (keypad_value & 3)
 
-/**************************************************************************/
-/** @brief stores the keypad value data.
+/**
+ * @brief stores the keypad value data.
  *
- *  Internal variable maintained by the keypad library to store the
- *  keypad value and other keypad-related flags.
+ * Internal variable maintained by the keypad library to store the keypad
+ * value and other keypad-related flags.
  * 
- *  @note Do not modify this value in any way as it may make the library
- *  unstable.
- */
-/**************************************************************************/
+ * @note Do not modify this value in any way as it may make the library
+ * unstable.
+ **************************************************************************/
 
 short int keypad_value;
 
-/**************************************************************************/
-/** @brief Sets up the necessary settings for keypad reading.
+/**
+ * @brief Sets up the necessary settings for keypad reading.
  *
- *  Sets up the pins connected to the keypad for change notification
- *  mode. 
+ * Sets up the pins connected to the keypad for change notification
+ * mode. 
  * 
- *  @return none
+ * @return none
  * 
- *  @note If _LIBKEYPAD_4x3_CNISR is set to 1, then the change
- *  notification interrupt subroutine is automatically managed by the
- *  library. If this interrupt is needed for other purposes, configure
- *  this macro to 0 and make sure to call keypad_update() inside 
- */
-/**************************************************************************/
+ * @note If _LIBKEYPAD_4x3_CNISR is set to 1, then the change notification
+ * interrupt subroutine is automatically managed by the library. If this
+ * interrupt is needed for other purposes, configure this macro to 0 and
+ * make sure to call keypad_update() inside,
+ **************************************************************************/
 
 void keypad_begin(){
     // initialize column pins
@@ -88,73 +85,69 @@ void keypad_begin(){
 #endif
 }
 
-/**************************************************************************/
-/** @brief Returns the keypad value.
+/**
+ * @brief Returns the keypad value.
  *
- *  Returns the keypad value as such:
+ * Returns the keypad value as such:
  * 
- *  |    Keypad     |||
- *  |:---:|:---:|:---:|
- *  |  0  |  1  |  2  |
- *  |  3  |  4  |  5  |
- *  |  6  |  7  |  8  |
- *  |  9  | 10  | 11  |
+ * |    Keypad     |||
+ * |:---:|:---:|:---:|
+ * |  0  |  1  |  2  |
+ * |  3  |  4  |  5  |
+ * |  6  |  7  |  8  |
+ * |  9  | 10  | 11  |
  * 
- *  @return An integer value based on the button pressed or -1 if there
- *  are no buttons pressed.
- */
-/**************************************************************************/
+ * @return An integer value based on the button pressed or -1 if there are
+ * no buttons pressed.
+ **************************************************************************/
 
 short int keypad_number(){
     return KEY_COL ? ((KEY_ROW * 3) + KEY_COL - 1) : -1;
 }
 
-/**************************************************************************/
-/** @brief Gives the keypad row value
+/**
+ * @brief Gives the keypad row value
  *
- *  Returns the row of the keypad button being pressed. The row index
- *  is from 0-3.
+ * Returns the row of the keypad button being pressed. The row index is
+ * from 0-3.
  * 
- *  @return An integer value based on the button pressed or -1 if there
- *  are no buttons pressed
- */
-/**************************************************************************/
+ * @return An integer value based on the button pressed or -1 if there are
+ * no buttons pressed
+ **************************************************************************/
 
 short int keypad_row(){
     return KEY_COL ? KEY_ROW : -1;
 }
 
 
-/**************************************************************************/
-/** @brief Gives the keypad column value
+/***********************************************************************//**
+ * @brief Gives the keypad column value
  *
- *  Returns the column of the keypad button being pressed. The column
- *  index is from 0-2.
+ * Returns the column of the keypad button being pressed. The column index
+ * is from 0-2.
  * 
- *  @return An integer value based on the button pressed or -1 if there
- *  are no buttons pressed
- */
-/**************************************************************************/
+ * @return An integer value based on the button pressed or -1 if there are
+ * no buttons pressed
+ **************************************************************************/
 
 short int keypad_col(){
     return KEY_COL - 1;
 }
 
-/**************************************************************************/
-/** @fn void keypad_update()
- *  @brief Updates the keypad value seen by the library.
+/***********************************************************************//**
+ * @fn void keypad_update()
+ * @brief Updates the keypad value seen by the library.
  *
- *  This function must be called at least once in a _CNInterrupt()
- *  subroutine given that the library has been set up correctly. This
- *  function allows the library to coexist with code that requires the
- *  use of a change notification interrupt besides using this library.
+ * This function must be called at least once in a _CNInterrupt()
+ * subroutine given that the library has been set up correctly. This
+ * function allows the library to coexist with code that requires the use
+ * of a change notification interrupt besides using this library.
  * 
- *  @return none
+ * @return none
  * 
- *  @note If __LIBKEYPAD_4x3_CNISR is set to 1, then this function will
- *  not exist and will be replaced by a definition of _CNInterrupt(). 
- */
-/**************************************************************************/
+ * @note If __LIBKEYPAD_4x3_CNISR is set to 1, then this function will not
+ * exist and will be replaced by a definition of _CNInterrupt(). 
+ **************************************************************************/
 
 #if __LIBKEYPAD_4x3_CNISR == 1
 void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(){
@@ -207,15 +200,14 @@ void keypad_update(){
 }
 
 
-/**************************************************************************/
-/** @brief Invalidates any current value until the next button press.
+/***********************************************************************//**
+ * @brief Invalidates any current value until the next button press.
  * 
- *  Useful for detecting between keypresses. It makes the library wait for
- *  the button to be unpressed before registering a pressed value again.
+ * Useful for detecting between keypresses. It makes the library wait for
+ * the button to be unpressed before registering a pressed value again.
  *
- *  @note This does nothing when there is no button currently pressed.
- */
-/**************************************************************************/
+ * @note This does nothing when there is no button currently pressed.
+ **************************************************************************/
 void keypad_reset(){
     keypad_value |= ((keypad_value & 0xf) == 0) ? 0 : 0x10;
 }

@@ -1,24 +1,23 @@
-/**************************************************************************/
-/** @file  PIC24_toolbox.h
- *  @brief This file is to be included for all source files that will use
- *  this library.
- *  @author Jaime Bronozo
+/** 
+ * @file  PIC24_toolbox.h
+ * @brief This file is to be included for all source files that will use
+ * this library.
+ * @author Jaime Bronozo
  * 
- *  This header manages the libraries to be included and excluded,
- *  allowing the use of the whole library with only a single file to
- *  include.
+ * This header manages the libraries to be included and excluded,
+ * allowing the use of the whole library with only a single file to
+ * include.
  * 
- *  @note To configure the behavior of the individual libraries, see
- *  toolbox_settings.h.
+ * @note To configure the behavior of the individual libraries, see
+ * toolbox_settings.h.
  * 
- *  @date November 1, 2018
- */
-/**************************************************************************/
+ * @date November 1, 2018
+ **************************************************************************/
 
 #ifndef __PIC24_EXTRAS_TOOLBOX_H__
 #define __PIC24_EXTRAS_TOOLBOX_H__
 
-/**************************************************************************/
+/** 
 /** @mainpage PIC24 General Usage Toolbox
  * 
  *  @section intromain Introduction
@@ -40,8 +39,7 @@
  *  For more information on how to use each library, see the following
  *  pages for configuration and the respective library header file for the
  *  list of available functions that each library has to offer.
- */
-/**************************************************************************/
+ **************************************************************************/
 
 #include "utilities/toolbox_settings.h"
 
