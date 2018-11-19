@@ -38,7 +38,7 @@ void ADC_begin(){
     AD1CON3bits.SAMC = _SAMPLE_PERIOD; // Tsamp
     AD1CON3bits.ADCS = _ADC_PERIOD; // Tad
     AD1CHS = 0;
-    AD1CONbits.ADON = 1;
+    AD1CON1bits.ADON = 1;
 }
 
 /**

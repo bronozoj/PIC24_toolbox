@@ -1,5 +1,5 @@
 /** 
- * @file  keypad_4x3.h
+ * @file  adcread.h
  * @brief This file contains function wrappers for dynamic ADC usage
  * @author Jaime Bronozo
  * 
