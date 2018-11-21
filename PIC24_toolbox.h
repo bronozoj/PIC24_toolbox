@@ -55,4 +55,8 @@
 #include "utilities/adcread.h"
 #endif
 
+#if __LIBEEPROM_I2C_DISABLE != 1
+#include "utilities/eeprom.h"
+#endif
+
 #endif

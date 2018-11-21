@@ -125,6 +125,13 @@
 #define __LATx(x) __PIN_ACCESS(_LAT, x)
 #define __TRISx(x) __PIN_ACCESS(_TRIS, x)
 
+#define __I2C_ACCESS(x, y) I2C##x##y
+#define __I2C_STAT(x) __I2C_ACCESS(x, STATbits)
+#define __I2C_CON(x) __I2C_ACCESS(x, CONbits) 
+#define __I2C_BRG(x) __I2C_ACCESS(x, BRG)
+#define __I2C_TRN(x) __I2C_ACCESS(x, TRN)
+#define __I2C_RCV(x) __I2C_ACCESS(x, RCV)
+
 /** 
  * @def __LIBLCD_DISABLED
  * 
@@ -305,5 +312,14 @@
 
 #define _SAMPLE_PERIOD 2
 #define _ADC_PERIOD 1
+
+#endif
+
+#define __LIBEEPROM_I2C_DISABLE 0
+
+#ifdef __LIBEEPROM_I2C_SETTINGS
+
+#define _CLOCK_RATE 157
+#define _I2C_NUM 1
 
 #endif
