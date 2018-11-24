@@ -18,9 +18,12 @@
 #define _EEPROM_NOT_RESPONDING 3
 #define _EEPROM_READ_BUF_OVERFLOW 4
 #define _EEPROM_READ_TIMEOUT 5
+#define _EEPROM_BUS_RESTARTED 6
+#define _EEPROM_FATAL_ERROR 0xff
 
 void EEPROM_begin();
 short unsigned int EEPROM_error();
+short unsigned int EEPROM_error2();
 int EEPROM_isPresent(char dev_address);
 int EEPROM_write_page(char *data, int size, uint16_t mem_address, char dev_address);
 int EEPROM_read(uint16_t mem_address, char dev_address);

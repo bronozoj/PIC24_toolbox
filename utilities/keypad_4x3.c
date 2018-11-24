@@ -81,7 +81,7 @@ void keypad_begin(){
 
 #if __LIBKEYPAD_4x3_CNISR == 1
     _CNIE = 1;
-    _CNIP = 1;
+    _CNIP = 2;
 #endif
 }
 
@@ -151,6 +151,8 @@ short int keypad_col(){
 
 #if __LIBKEYPAD_4x3_CNISR == 1
 void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(){
+    delay_us(1500);
+    _CNIF = 0;  
 #else
 void keypad_update(){
 #endif
@@ -164,11 +166,18 @@ void keypad_update(){
         keypad_value |= 0xc;
     else{
         keypad_value &= 0xe0;
+#if __LIBKEYPAD_4x3_CNISR == 1
+        _CNIF = 0;
+#endif
         return;
     }
 
-    if(keypad_value & 0x10)
+    if(keypad_value & 0x10){
+#if __LIBKEYPAD_4x3_CNISR == 1
+        _CNIF = 0;
+#endif
         return;
+    }
     
     __LATx(_COL2) = 1;
     __LATx(_COL3) = 1;
@@ -177,6 +186,9 @@ void keypad_update(){
         __LATx(_COL2) = 0;
         __LATx(_COL3) = 0;
         keypad_value |= 0x1;
+#if __LIBKEYPAD_4x3_CNISR == 1
+        _CNIF = 0;
+#endif
         return;
     }
 
@@ -187,6 +199,9 @@ void keypad_update(){
         __LATx(_COL1) = 0;
         __LATx(_COL3) = 0;
         keypad_value |= 0x2;
+#if __LIBKEYPAD_4x3_CNISR == 1
+        _CNIF = 0;
+#endif
         return;
     }
 

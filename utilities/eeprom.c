@@ -37,6 +37,7 @@
 #define _RSTART 0x300
 #define _SEND 0x400
 #define _STOP 0x500
+#define _INIT 0x600
 #define _SENDACK 0x600
 #define _WSEND1 0x1000
 #define _WSEND2 0x2000
@@ -60,25 +61,48 @@
 #define ADDR_READ(x) 0xa1 | ((x) << 1)
 #define ADDR_WRITE(x) 0xa0 | ((x) << 1)
 
+int __eeprom_bus_recover();
+
 uint32_t eeprom_errno = 0;
 
 short unsigned int EEPROM_error(){
     return eeprom_errno & 0xff;
 }
 
+short unsigned int EEPROM_error2(){
+    return (eeprom_errno >> 16) & 0xff;
+}
+
+short unsigned int EEPROM_error3(){
+    return (eeprom_errno >> 8) & 0xff;
+}
+
 int __eeprom_start(){
-    __BUSCOL = 0;
+    if(__BUSCOL){
+        if(__eeprom_bus_recover() < 0){
+            eeprom_errno = _EEPROM_FATAL_ERROR;
+            return -1;
+        }
+        __BUSCOL = 0;
+    }
     _EEPROM_CON.SEN = 1;
     Nop();
-    if(__BUSCOL){
-        eeprom_errno = _EEPROM_BUS_COLLISION | _START1;
-        return -1;
-    }
-    else if(_EEPROM_STAT.IWCOL){
-        eeprom_errno = _EEPROM_WRITE_BUF_COLLISION | _START1;
-        return -1;
-    }
-    while(_EEPROM_CON.SEN);
+    do{
+        if(__BUSCOL){
+            if(__eeprom_bus_recover() < 0){
+                eeprom_errno = _EEPROM_FATAL_ERROR | _START1;
+                return -1;
+            }
+            _EEPROM_CON.SEN = 0;
+            __BUSCOL = 0;
+            continue;
+        }
+        else if(_EEPROM_STAT.IWCOL){
+            eeprom_errno = _EEPROM_WRITE_BUF_COLLISION | _START1;
+            return -1;
+        }
+        while(_EEPROM_CON.SEN);
+    }while(0);
     if(__BUSCOL){
         eeprom_errno = _EEPROM_BUS_COLLISION | _START2;
         return -1;
@@ -95,6 +119,44 @@ int __eeprom_restart(){
         return -1;
     }
     while(_EEPROM_CON.RSEN);
+    return 0;
+}
+
+int __eeprom_bus_recover(){
+    int i;
+
+    _EEPROM_CON.RCEN = 0;
+    _EEPROM_STAT.IWCOL = 0;
+    _EEPROM_STAT.BCL = 0;
+
+    _EEPROM_CON.I2CEN = 0;
+    __LATx(_I2C_SDA) = 1;
+    __LATx(_I2C_SCL) = 1;
+
+    delay_us(10);
+    if(__PORTx(_I2C_SCL) == 0){
+        return -1;
+    }
+
+    for(i = 10; i > 0; i--){
+        if(__PORTx(_I2C_SDA)){
+            break;
+        }\
+
+        __LATx(_I2C_SCL) = 0;
+        delay_us(10);
+        __LATx(_I2C_SCL) = 1;
+        delay_us(10);
+    }
+    if(!__LATx(_I2C_SCL) || !__LATx(_I2C_SDA)){
+        return -2;
+    }
+
+    __LATx(_I2C_SDA) = 0;
+    delay_us(10);
+    __LATx(_I2C_SDA) = 1;
+    delay_us(10);
+    _EEPROM_CON.I2CEN = 1;
     return 0;
 }
 
@@ -127,12 +189,12 @@ int __eeprom_word_send(int16_t data){
 int __eeprom_byte_receive(){
     int count = 0;
     _EEPROM_CON.RCEN = 1;
-    while(!_EEPROM_STAT.RBF){
+    while(!_EEPROM_STAT.RBF);/*{
         if(count++ == 0xffff){
             eeprom_errno = _EEPROM_READ_TIMEOUT;
             return -1;
         }
-    }
+    }*/
     return _EEPROM_RCV;
 }
 
@@ -155,7 +217,7 @@ int __eeprom_stop(){
     Nop();
     if(__BUSCOL){
         eeprom_errno = _EEPROM_BUS_COLLISION | _STOP;
-        return -1;
+        //return -1;
     }
     while(_EEPROM_CON.PEN);
     return 0;
@@ -301,11 +363,18 @@ int EEPROM_read(uint16_t mem_address, char dev_address){
         return -1;
     }
 
-    byte_out = __eeprom_byte_receive();
-    if(__eeprom_read_ack(_NACK)){
+    fval = __eeprom_byte_receive();
+    if(fval == -1 || __eeprom_read_ack(_NACK)){
         eeprom_errno |= _READ_NACK;
         return -1;
     }
+
+    if(__eeprom_stop()){
+        eeprom_errno |= _READ_END;
+        return -1;
+    }
+
+    byte_out = fval;
 
     return byte_out;
 }
@@ -338,8 +407,14 @@ int EEPROM_read_delim(char *buf, int size, char *delim, uint16_t mem_address, ch
     }
 
     if(__eeprom_restart()){
-        eeprom_errno |= _READ_RSTART;
-        return -1;
+        if(__eeprom_stop()){
+            eeprom_errno |= _READ_RSTART;
+            return -1;
+        }
+        if(__eeprom_start()){
+            eeprom_errno |= _READ_RSTART;
+            return -1;
+        }
     }
 
     fval = __eeprom_byte_send(ADDR_READ(dev_address));
@@ -355,6 +430,7 @@ int EEPROM_read_delim(char *buf, int size, char *delim, uint16_t mem_address, ch
     while(count < size){
         fval = __eeprom_byte_receive();
         if(fval == -1){
+            _READ_NACK;
             return -1;
         }
         buf[count] = fval;
@@ -379,6 +455,7 @@ int EEPROM_read_delim(char *buf, int size, char *delim, uint16_t mem_address, ch
 
     if(__eeprom_stop()){
         eeprom_errno |= _READ_END;
+        return -1;
     }
 
     return count;
@@ -392,7 +469,7 @@ int EEPROM_isPresent(char dev_address){
         return -1;
     }
 
-    retval = __eeprom_byte_send(ADDR_READ(dev_address));
+    retval = __eeprom_byte_send(ADDR_WRITE(dev_address));
     if(retval == -1){
         eeprom_errno |= _POLL_SEND;
         return -1;

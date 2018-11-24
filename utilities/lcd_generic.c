@@ -194,6 +194,59 @@ void lcd_cursor(uint8_t pos, uint8_t offset){
 }
 
 /**
+ * @param a Character to display in the lcd
+ * 
+ * @brief Displays a character to the lcd.
+ *
+ * Display an input character to the lcd starting at the current cursor
+ * position. This assumes that the cursor position is known before usage.
+ * This sends characters to the character register and assumes that the
+ * the lcd is receiving data to the DD RAM.
+ * 
+ * @return none.
+ * 
+ * @note This waits for a minimum of 40us instead of checking if the lcd is
+ * ready for a new command due to the lack of an implementation for lcd
+ * read back.
+ **************************************************************************/
+
+void lcd_char(char a){
+    send_8bits(1, a);
+    delay_us(40);
+}
+
+/**
+ * @param a Character to display in the lcd
+ * @param pos Sets the line at which the cursor will start. Use flags
+ * #CURSOR_BOTTOM to place the cursor at the bottom line or #CURSOR_TOP
+ * to place the cursor at the top line.
+ * @param offset Sets the offset of the cursor position from the start of
+ * the line.
+ * 
+ * @brief Displays a character to the lcd in a specific position.
+ *
+ * Combines the functions lcd_cursor() and lcd_text() to position the
+ * cursor before displaying an input character to the lcd. This sends
+ * characters to the character register.
+ * 
+ * @return The number of characters written to the lcd.
+ * 
+ * @note This waits for a minimum of 40us for the character and cursor
+ * position setting instead of checking if the lcd is ready for a new
+ * command due to the lack of an implementation for lcd read back.
+ **************************************************************************/
+
+void lcd_char_offset(char a, uint8_t pos, uint8_t offset){
+    // reposition cursor
+    send_8bits(0, 0x80 | pos | offset);
+    delay_us(40);
+
+    // send character
+    send_8bits(1, a);
+    delay_us(40);
+}
+
+/**
  * @param str String to display in the lcd
  * 
  * @brief Displays a string to the lcd.
@@ -213,7 +266,7 @@ void lcd_cursor(uint8_t pos, uint8_t offset){
 int lcd_text(char *str){
     int j = 0;
     while(str[j] != '\0'){
-        send_8bits(1, (str[j]));
+        send_8bits(1, str[j]);
         delay_us(40);
         j++;
     }
@@ -232,8 +285,7 @@ int lcd_text(char *str){
  *
  * Combines the functions lcd_cursor() and lcd_text() to position the
  * cursor before displaying an input string to the lcd. This sends
- * characters to the character register and  assumes that the lcd is
- * receiving data to the DD RAM.
+ * characters to the character register
  * 
  * @return The number of characters written to the lcd.
  * 
@@ -251,7 +303,7 @@ int lcd_text_offset(char *str, uint8_t pos, uint8_t offset){
 
     // send each character
     while(str[j] != '\0'){
-        send_8bits(1, (str[j]));
+        send_8bits(1, str[j]);
         delay_us(40);
         j++;
     }
@@ -259,11 +311,11 @@ int lcd_text_offset(char *str, uint8_t pos, uint8_t offset){
 }
 
 /**
- * @param number An unsigned digit.
+ * @param number An signed digit.
  *
- * @brief Displays an unsigned digit to the lcd.
+ * @brief Displays an signed digit to the lcd.
  * 
- * Displays an input unsigned integer value to the lcd starting at the
+ * Displays an input signed integer value to the lcd starting at the
  * current cursor position. This assumes that the cursor position is known
  * before usage. This sends the equivalent digit characters to the
  * character register and assumes that the lcd is receiving data to the
@@ -276,8 +328,15 @@ int lcd_text_offset(char *str, uint8_t pos, uint8_t offset){
  * for lcd read back.
  **************************************************************************/
 
-int lcd_num(uint16_t number){
+int lcd_num(int number){
     int length = 1;
+    if(number < 0){
+        send_8bits(1, '-');
+        delay_us(40);
+        length++;
+        number = 0-number;
+    }
+
     if(number >= 10000){
         send_8bits(1, ((number / 10000) % 10) + '0');
         delay_us(40);
@@ -308,19 +367,18 @@ int lcd_num(uint16_t number){
 }
 
 /**
- * @param number An unsigned digit.
+ * @param number A signed digit.
  * @param pos Sets the line at which the cursor will start. Use flags
  * #CURSOR_BOTTOM to place the cursor at the bottom line or #CURSOR_TOP
  * to place the cursor at the top line.
  * @param offset Sets the offset of the cursor position from the start of
  * the line.
  *
- * @brief Displays an unsigned digit to the lcd in a specific position.
+ * @brief Displays a signed digit to the lcd in a specific position.
  * 
  * Combines the functions lcd_cursor() and lcd_num() to position the
- * cursor before displaying an input unsigned digit to the lcd. This
- * sends the equivalent digit characters to the character register and
- * assumes that the lcd is receiving data to the DD RAM.
+ * cursor before displaying an input signed digit to the lcd. This sends
+ * the equivalent digit characters to the character register.
  * 
  * @return The number of characters written to the lcd.
  * 
@@ -329,7 +387,7 @@ int lcd_num(uint16_t number){
  * command due to the lack of an implementation for lcd read back.
  **************************************************************************/
 
-int lcd_num_offset(uint16_t number, uint8_t pos, uint8_t offset){
+int lcd_num_offset(int number, uint8_t pos, uint8_t offset){
     int length = 1;
 
     // reposition cursor
@@ -337,6 +395,13 @@ int lcd_num_offset(uint16_t number, uint8_t pos, uint8_t offset){
     delay_us(40);
 
     // display every digit
+    if(number < 0){
+        send_8bits(1, '-');
+        delay_us(40);
+        length++;
+        number = 0-number;
+    }
+
     if(number >= 10000){
         send_8bits(1, ((number / 10000) % 10) + '0');
         delay_us(40);

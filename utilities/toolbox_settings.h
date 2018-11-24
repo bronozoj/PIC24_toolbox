@@ -283,15 +283,15 @@
  * must be manually set and the function keypad_update() be called inside
  * the _CNInterrupt() function at least once.
  **************************************************************************/
-#define __LIBKEYPAD_4x3_CNISR 0
+#define __LIBKEYPAD_4x3_CNISR 1
 
 #define __CN_ACCESS(x,y) _CN##y##x
 #define __CN_PUE(x) __CN_ACCESS(PUE, x)
 #define __CN_IE(x) __CN_ACCESS(IE, x)
 
 #define _COL1 B7
-#define _COL2 B8
-#define _COL3 B9
+#define _COL2 B11
+#define _COL3 B13
 #define _ROW1 A1
 #define _ROW2 A2
 #define _ROW3 A3
@@ -319,7 +319,9 @@
 
 #ifdef __LIBEEPROM_I2C_SETTINGS
 
-#define _CLOCK_RATE 157
+#define _CLOCK_RATE 200//157
 #define _I2C_NUM 1
+#define _I2C_SDA B9
+#define _I2C_SCL B8
 
 #endif

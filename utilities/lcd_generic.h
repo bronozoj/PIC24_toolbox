@@ -113,9 +113,11 @@ void lcd_display(uint8_t d, uint8_t c, uint8_t b);
 void lcd_shift(uint8_t direction);
 void lcd_cursor(uint8_t pos, uint8_t offset);
 
+void lcd_char(char a);
+void lcd_char_offset(char a, uint8_t pos, uint8_t offset);
 int lcd_text(char *str);
 int lcd_text_offset(char *str, uint8_t pos, uint8_t offset);
-int lcd_num(uint16_t number);
-int lcd_num_offset(uint16_t number, uint8_t pos, uint8_t offset);
+int lcd_num(int number);
+int lcd_num_offset(int number, uint8_t pos, uint8_t offset);
 
 #endif
