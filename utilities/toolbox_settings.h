@@ -125,6 +125,43 @@
 #define __LATx(x) __PIN_ACCESS(_LAT, x)
 #define __TRISx(x) __PIN_ACCESS(_TRIS, x)
 
+/** 
+ * @def pinMode(x, y)
+ * @param x Pin value.
+ * @param y Pin data direction.
+ * 
+ * @brief Macro for setting pin data direction.
+ * 
+ * This function is a macro for setting the pin data direction. This works
+ * similarly to the Arduino library function of the same name. However,
+ * this requires the specification of the whole pin name instead of an
+ * arbitrary number to represent every pin.
+ * 
+ * @def digitalWrite(x, y)
+ * @param x Pin value.
+ * @param y Pin output value.
+ * 
+ * @brief Macro for setting pin output value.
+ * 
+ * This function is a macro for setting the pin output value. This works
+ * similarly to the Arduino library function of the same name. However,
+ * this requires the specification of the whole pin name instead of an
+ * arbitrary number to represent every pin.
+ * 
+ * @def digitalRead(x)
+ * @param x Pin value.
+ * 
+ * @brief Macro for reading pin input value.
+ * 
+ * This function is a macro for reading the pin input value. This works
+ * similarly to the Arduino library function of the same name. However,
+ * this requires the specification of the whole pin name instead of an
+ * arbitrary number to represent every pin.
+ **************************************************************************/
+#define pinMode(x, y) __PIN_ACCESS(_TRIS, x) = (y)
+#define digitalWrite(x, y) __PIN_ACCESS(_LAT, x) = (y)
+#define digitalRead(x) __PIN_ACCESS(_R, x)
+
 #define __I2C_ACCESS(x, y) I2C##x##y
 #define __I2C_STAT(x) __I2C_ACCESS(x, STATbits)
 #define __I2C_CON(x) __I2C_ACCESS(x, CONbits) 
